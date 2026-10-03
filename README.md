@@ -1,65 +1,68 @@
 # Binora Swap
 
-Binora Swap is a BNB Chain AMM DEX inspired by Uniswap. It includes core liquidity pool logic, token swapping, LP management, and a wallet-connected frontend.
+Binora Swap is a complete BNB Chain AMM DEX starter inspired by Uniswap.
 
 ## Project name
-
 Binora Swap
 
-## Features
+## Why this version is final
+- Smart contract base for AMM pair creation and liquidity routing
+- BNB Testnet deployment script
+- Modern wallet-ready web interface
+- Estimated swap and liquidity UX
+- Clean project structure and documentation
 
-- Constant-product AMM pools
-- Factory-based pair creation
-- Add and remove liquidity
-- Token swaps with fee logic
-- Wrapped BNB support
-- React + Vite frontend for wallet connection and trading
-- Hardhat deployment for BNB Testnet
+## Stack
+- Solidity 0.8.20
+- Hardhat
+- OpenZeppelin contracts
+- React + Vite
+- Ethers v6
+- BNB Smart Chain Testnet
 
-## Smart contract architecture
+## Smart contracts
+- `contracts/AMMFactory.sol` — creates pair contracts
+- `contracts/AMMPair.sol` — constant-product pool and LP logic
+- `contracts/AMMRouter.sol` — adds liquidity and swaps tokens
+- `contracts/Token.sol` — ERC20 sample token
+- `contracts/WBNB.sol` — wrapped BNB contract
 
-- `contracts/AMMFactory.sol` — deploys trading pairs
-- `contracts/AMMPair.sol` — pool and LP logic
-- `contracts/AMMRouter.sol` — user-facing liquidity and swap entrypoints
-- `contracts/Token.sol` — sample ERC20 token
-- `contracts/WBNB.sol` — wrapped BNB
-- `scripts/deploy.js` — deployment script
+## Quick start
 
-## Getting started
-
-1. Install dependencies:
+Install all dependencies:
 
 ```bash
 npm install
 ```
 
-2. Compile contracts:
+Compile the contracts:
 
 ```bash
 npm run compile
 ```
 
-3. Run tests:
+Run the tests:
 
 ```bash
 npm test
 ```
 
-4. Install and start the frontend:
+Install and launch the frontend:
 
 ```bash
 npm run frontend:install
 npm run frontend:dev
 ```
 
-5. Deploy to BNB Testnet:
+## Deployment to BNB testnet
+
+Create the environment file:
 
 ```bash
 cp .env.example .env
-npm run deploy:bsc
 ```
 
-## Environment variables
+Update `.env`:
 
 ```bash
 PRIVATE_KEY=your_private_key_here
@@ -67,16 +70,18 @@ BNB_TESTNET_RPC_URL=https://data-seed-prebsc-1-s1.binance.org:8545/
 BSC_API_KEY=your_bscscan_api_key
 ```
 
-## Frontend
+Deploy:
 
-The frontend is available in `frontend/` and includes:
+```bash
+npm run deploy:bsc
+```
 
-- wallet connection
-- token selection
-- trade form
-- liquidity panel
-- deployment configuration helpers
+## Frontend features
+- Wallet connection UI
+- Swap form
+- Liquidity section
+- Pool overview panel
+- Token selection and pricing display
 
 ## Notes
-
-This starter is production-oriented and suitable for a BNB Chain project prototype. You will still need a funded wallet and valid testnet RPC settings for live deployment.
+This project is a strong starter for a real BNB DEX. For production deployment, connect real tokens, contract addresses, and a secure wallet setup. Keep private keys in a trusted environment only.

@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 
-describe('AMM tests', function () {
-  it('adds liquidity and performs a swap', async function () {
+describe('Binora Swap AMM flow', function () {
+  it('creates a pool, mints LP tokens, and allows a basic swap flow', async function () {
     const [owner] = await ethers.getSigners();
 
     const factory = await ethers.deployContract('AMMFactory');
@@ -13,7 +13,7 @@ describe('AMM tests', function () {
     await tokenA.approve(await router.getAddress(), ethers.parseEther('10000'));
     await tokenB.approve(await router.getAddress(), ethers.parseEther('10000'));
 
-    const tx = await router.addLiquidity(
+    await router.addLiquidity(
       await tokenA.getAddress(),
       await tokenB.getAddress(),
       ethers.parseEther('100'),
@@ -22,18 +22,21 @@ describe('AMM tests', function () {
       0,
       owner.address
     );
-    await tx.wait();
 
     const pairAddress = await factory.getPair(await tokenA.getAddress(), await tokenB.getAddress());
-    const pair = await ethers.getContractAt('AMMPair', pairAddress);
+    expect(pairAddress).to.not.equal(ethers.ZeroAddress);
 
+    const pair = await ethers.getContractAt('AMMPair', pairAddress);
     const lpBalance = await pair.balanceOf(owner.address);
     expect(lpBalance).to.be.gt(0n);
 
-    const amountOut = await router.getAmountOut(ethers.parseEther('10'), ethers.parseEther('100'), ethers.parseEther('100'));
-    expect(amountOut).to.be.gt(0n);
+    const output = await router.getAmountOut(
+      ethers.parseEther('10'),
+      ethers.parseEther('100'),
+      ethers.parseEther('100')
+    );
+    expect(output).to.be.gt(0n);
 
-    await tokenA.approve(await router.getAddress(), ethers.parseEther('1000'));
     await router.swapExactTokensForTokens(
       ethers.parseEther('10'),
       0,
@@ -42,7 +45,7 @@ describe('AMM tests', function () {
       owner.address
     );
 
-    const balanceB = await tokenB.balanceOf(owner.address);
-    expect(balanceB).to.be.gt(0n);
+    const finalBalance = await tokenB.balanceOf(owner.address);
+    expect(finalBalance).to.be.gt(0n);
   });
 });
