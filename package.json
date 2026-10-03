@@ -1,6 +1,6 @@
 {
-  "name": "bnb-dex-amm",
-  "version": "1.0.0",
+  "name": "binora-swap",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "compile": "hardhat compile",
@@ -8,7 +8,8 @@
     "deploy:bsc": "hardhat run scripts/deploy.js --network bnbTestnet",
     "frontend:install": "cd frontend && npm install",
     "frontend:dev": "cd frontend && npm run dev",
-    "frontend:build": "cd frontend && npm run build"
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:preview": "cd frontend && npm run preview"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
