@@ -1,2 +1,3 @@
-# bnb-dex-amm
-A Decentralized Exchange (DEX) with Automated Market Maker (AMM) on BNB Chain
+# BNB DEX AMM
+
+A Decentralized Exchange with Automated Market Maker logic on BNB Chain.
