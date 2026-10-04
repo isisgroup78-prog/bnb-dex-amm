@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
@@ -8,23 +9,20 @@ contract WBNB is ERC20 {
 
     constructor() ERC20('Wrapped BNB', 'WBNB') {}
 
-    receive() external payable {
-        deposit();
-    }
-
-    fallback() external payable {
-        deposit();
-    }
+    receive() external payable { deposit(); }
+    fallback() external payable { deposit(); }
 
     function deposit() public payable {
+        require(msg.value > 0, 'ZERO_VALUE');
         _mint(msg.sender, msg.value);
         emit Deposit(msg.sender, msg.value);
     }
 
     function withdraw(uint256 amount) external {
-        require(balanceOf(msg.sender) >= amount, 'INSUFFICIENT_BALANCE');
+        require(amount > 0 && balanceOf(msg.sender) >= amount, 'INSUFFICIENT_BALANCE');
         _burn(msg.sender, amount);
-        payable(msg.sender).transfer(amount);
+        (bool success,) = payable(msg.sender).call{value: amount}('');
+        require(success, 'ETH_TRANSFER_FAILED');
         emit Withdrawal(msg.sender, amount);
     }
 }
