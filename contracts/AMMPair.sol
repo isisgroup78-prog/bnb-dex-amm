@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
@@ -7,7 +8,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 contract AMMPair is ERC20 {
     uint256 private constant MINIMUM_LIQUIDITY = 10**3;
 
-    address public factory;
+    address public immutable factory;
     address public token0;
     address public token1;
 
@@ -19,14 +20,7 @@ contract AMMPair is ERC20 {
 
     event Mint(address indexed sender, uint256 amount0, uint256 amount1);
     event Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to);
-    event Swap(
-        address indexed sender,
-        uint256 amount0In,
-        uint256 amount1In,
-        uint256 amount0Out,
-        uint256 amount1Out,
-        address indexed to
-    );
+    event Swap(address indexed sender, uint256 amount0In, uint256 amount1In, uint256 amount0Out, uint256 amount1Out, address indexed to);
 
     modifier lock() {
         require(unlocked == 1, 'LOCKED');
@@ -35,25 +29,28 @@ contract AMMPair is ERC20 {
         unlocked = 1;
     }
 
-    constructor() ERC20('AMMPair LP', 'AMMLP') {
+    constructor() ERC20('KINGLOZO LP', 'KLP') {
         factory = msg.sender;
     }
 
     function initialize(address _token0, address _token1) external {
         require(msg.sender == factory, 'FORBIDDEN');
         require(token0 == address(0) && token1 == address(0), 'INITIALIZED');
+        require(_token0 != address(0) && _token1 != address(0), 'ZERO_ADDRESS');
+        require(_token0 != _token1, 'IDENTICAL_TOKENS');
+        require(_token0.code.length > 0 && _token1.code.length > 0, 'NOT_CONTRACT');
         token0 = _token0;
         token1 = _token1;
     }
 
-    function getReserves() public view returns (uint112 _reserve0, uint112 _reserve1, uint32 _blockTimestampLast_) {
-        _reserve0 = reserve0;
-        _reserve1 = reserve1;
-        _blockTimestampLast_ = blockTimestampLast;
+    function getReserves() public view returns (uint112, uint112, uint32) {
+        return (reserve0, reserve1, blockTimestampLast);
     }
 
     function _safeTransfer(address token, address to, uint256 amount) internal {
-        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(IERC20.transfer.selector, to, amount));
+        (bool success, bytes memory data) = token.call(
+            abi.encodeWithSelector(IERC20.transfer.selector, to, amount)
+        );
         require(success && (data.length == 0 || abi.decode(data, (bool))), 'TRANSFER_FAILED');
     }
 
@@ -65,6 +62,8 @@ contract AMMPair is ERC20 {
     }
 
     function mint(address to) external lock returns (uint256 liquidity) {
+        require(to != address(0), 'INVALID_TO');
+
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
@@ -82,11 +81,12 @@ contract AMMPair is ERC20 {
         require(liquidity > 0, 'INSUFFICIENT_LIQUIDITY_MINTED');
         _mint(to, liquidity);
         _update(balance0, balance1);
-
         emit Mint(msg.sender, amount0, amount1);
     }
 
     function burn(address to) external lock returns (uint256 amount0, uint256 amount1) {
+        require(to != address(0), 'INVALID_TO');
+
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
@@ -109,7 +109,10 @@ contract AMMPair is ERC20 {
     }
 
     function swap(uint256 amount0Out, uint256 amount1Out, address to) external lock {
+        require(to != address(0), 'INVALID_TO');
+        require(to != token0 && to != token1, 'INVALID_TO');
         require(amount0Out > 0 || amount1Out > 0, 'INSUFFICIENT_OUTPUT_AMOUNT');
+
         (uint112 _reserve0, uint112 _reserve1,) = getReserves();
         require(amount0Out < _reserve0 && amount1Out < _reserve1, 'INSUFFICIENT_LIQUIDITY');
 
@@ -126,10 +129,12 @@ contract AMMPair is ERC20 {
 
         uint256 balance0Adjusted = balance0 * 1000 - amount0In * 3;
         uint256 balance1Adjusted = balance1 * 1000 - amount1In * 3;
-        require(balance0Adjusted * balance1Adjusted >= uint256(_reserve0) * uint256(_reserve1) * 1000**2, 'K');
+        require(
+            balance0Adjusted * balance1Adjusted >= uint256(_reserve0) * uint256(_reserve1) * 1000**2,
+            'K'
+        );
 
         _update(balance0, balance1);
-
         emit Swap(msg.sender, amount0In, amount1In, amount0Out, amount1Out, to);
     }
 }
