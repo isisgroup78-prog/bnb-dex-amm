@@ -1,87 +1,93 @@
-# Binora Swap
+# KINGLOZO DEX v1
 
-Binora Swap is a complete BNB Chain AMM DEX starter inspired by Uniswap.
-
-## Project name
-Binora Swap
-
-## Why this version is final
-- Smart contract base for AMM pair creation and liquidity routing
-- BNB Testnet deployment script
-- Modern wallet-ready web interface
-- Estimated swap and liquidity UX
-- Clean project structure and documentation
+KINGLOZO DEX v1 is a BNB Chain constant-product AMM designed as a testnet-first project. It is inspired by the proven Factory/Pair/Router architecture used by major AMMs, but its contracts must still be independently audited before mainnet use.
 
 ## Stack
+
 - Solidity 0.8.20
-- Hardhat
-- OpenZeppelin contracts
+- OpenZeppelin
+- Hardhat + Foundry configuration
 - React + Vite
 - Ethers v6
 - BNB Smart Chain Testnet
+- BscScan verification support
 
 ## Smart contracts
-- `contracts/AMMFactory.sol` — creates pair contracts
-- `contracts/AMMPair.sol` — constant-product pool and LP logic
-- `contracts/AMMRouter.sol` — adds liquidity and swaps tokens
-- `contracts/Token.sol` — ERC20 sample token
-- `contracts/WBNB.sol` — wrapped BNB contract
 
-## Quick start
+- `contracts/AMMFactory.sol` — validates tokens and creates unique pairs
+- `contracts/AMMPair.sol` — constant-product pool, LP token, 0.30% swap fee, invariant checks and reentrancy lock
+- `contracts/AMMRouter.sol` — liquidity, slippage limits, deadlines, multi-hop swaps and native BNB/WBNB flows
+- `contracts/Token.sol` — test ERC20
+- `contracts/WBNB.sol` — wrapped native BNB for the testnet
 
-Install all dependencies:
+## Local verification
+
+Install dependencies:
 
 ```bash
 npm install
-```
-
-Compile the contracts:
-
-```bash
 npm run compile
+npm test
+npm run frontend:install
+npm run frontend:build
 ```
 
-Run the tests:
+The test suite covers pool creation, both swap directions, reversed token ordering, slippage, expired deadlines, liquidity removal, multi-hop swaps, native BNB liquidity/swaps and invalid address checks.
+
+## BNB Testnet deployment
+
+Copy the example environment:
 
 ```bash
-npm test
+cp .env.example .env
 ```
 
-Install and launch the frontend:
+Set the secrets in your local environment or Replit/GitHub Secrets. Never commit a real private key.
+
+Required variables:
+
+- `PRIVATE_KEY`
+- `BNB_TESTNET_RPC_URL`
+- `BSC_API_KEY`
+
+Deploy only to BNB Testnet:
+
+```bash
+npm run deploy:bsc
+```
+
+The deployment script writes a generated `deployments/bnbTestnet.json` file locally. Deployment files are ignored by Git so no secret is committed.
+
+For the frontend, copy `frontend/.env.example` to `frontend/.env` and fill the deployed contract addresses:
+
+- `VITE_FACTORY_ADDRESS`
+- `VITE_ROUTER_ADDRESS`
+- `VITE_WBNB_ADDRESS`
+- `VITE_KLOZO_ADDRESS`
+- `VITE_RKT_ADDRESS`
+
+Then run:
 
 ```bash
 npm run frontend:install
 npm run frontend:dev
 ```
 
-## Deployment to BNB testnet
+The frontend connects an injected wallet, targets BNB Testnet, reads live balances/quotes, requests ERC20 approvals, executes swaps, and adds/removes liquidity.
 
-Create the environment file:
+## Verification
 
-```bash
-cp .env.example .env
-```
+After a successful testnet deployment and with a BscScan API key, verify contracts with Hardhat using the BNB Testnet custom chain configuration.
 
-Update `.env`:
+Do not treat a successful compile as a security audit. Before mainnet:
 
-```bash
-PRIVATE_KEY=your_private_key_here
-BNB_TESTNET_RPC_URL=https://data-seed-prebsc-1-s1.binance.org:8545/
-BSC_API_KEY=your_bscscan_api_key
-```
+1. Run the full test suite and fuzz/invariant testing.
+2. Run static analysis such as Slither.
+3. Review router/pair edge cases and economic assumptions.
+4. Verify source code on BscScan.
+5. Perform an independent smart-contract security review/audit.
+6. Test with a dedicated deployment wallet and multisig/admin policy if protocol administration is introduced.
 
-Deploy:
+## Current scope
 
-```bash
-npm run deploy:bsc
-```
-
-## Frontend features
-- Wallet connection UI
-- Swap form
-- Liquidity section
-- Pool overview panel
-- Token selection and pricing display
-
-## Notes
-This project is a strong starter for a real BNB DEX. For production deployment, connect real tokens, contract addresses, and a secure wallet setup. Keep private keys in a trusted environment only.
+KINGLOZO v1 is intentionally testnet-first. No mainnet deployment is performed by this repository configuration.
