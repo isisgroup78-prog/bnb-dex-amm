@@ -1,0 +1,21 @@
+name: KINGLOZO CI
+
+on:
+  push:
+    branches: ["main", "fix/**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run compile
+      - run: npm test
+      - run: npm run frontend:install
+      - run: npm run frontend:build
