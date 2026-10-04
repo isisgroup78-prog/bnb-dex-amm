@@ -2,12 +2,12 @@ name: KINGLOZO CI
 
 on:
   push:
-    branches: ["main", "fix/**"]
+    branches: ["main", "fix/**", "kinglozo-production-v1"]
   pull_request:
     branches: ["main"]
 
 jobs:
-  contracts:
+  contracts-and-frontend:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
